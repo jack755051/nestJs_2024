@@ -51,8 +51,23 @@ export class UserService {
    * @param name
    * @returns
    */
-  public async findUserByName(name: string) {
+  public async findUserByName(name: string): Promise<UserEntity> {
     const result = await this.userRepository.findOne({ where: { name } });
     return result;
+  }
+
+  /**
+   * 透過名字判斷是否有使用者
+   * @param name
+   * @returns
+   */
+  public async hasUser(name: string): Promise<boolean> {
+    const result = await this.userRepository.findOne({ where: { name } });
+
+    if (result) {
+      return true;
+    } else {
+      false;
+    }
   }
 }
