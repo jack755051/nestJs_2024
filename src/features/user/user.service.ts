@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'src/typeorm/entities';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { CommonUtility } from 'src/core';
+import { CommonUtility } from 'src/core/util';
 import { v4 as uuidv4 } from 'uuid';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -69,5 +70,44 @@ export class UserService {
     } else {
       false;
     }
+  }
+
+  /**
+   * 刪除使用者透過uuid
+   * @param uuid
+   * @returns
+   */
+  public async deleteUser(uuid: string) {
+    const _uuid = uuid;
+    return await this.userRepository.delete({ uuid: _uuid });
+  }
+
+  /**
+   * 更新使用者資訊
+   * @param uuid
+   * @param dto
+   * @returns
+   */
+  public async updateUser(uuid: string, dto: UpdateUserDto) {
+    //找到使用者
+    const user = await this.userRepository.findOne({ where: { uuid } });
+    //重新設定密碼
+    //若新密碼跟舊密碼一樣
+    const { hash, salt } = CommonUtility.encryptBySalt(dto.password);
+
+    if (hash === user.passwordHash) {
+      return { oData: '你的新密碼與舊密碼相同' };
+    }
+
+    const newUser: UserEntity = {
+      ...user,
+      name: dto.name,
+      passwordHash: hash,
+      passwordSalt: salt,
+      email: dto.email,
+      role: dto.role,
+    };
+
+    return await this.userRepository.save(newUser);
   }
 }
