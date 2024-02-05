@@ -6,7 +6,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserEntity } from './typeorm/entities/user.entity';
 import { UserModule } from './features/user/user.module';
-
+import { AuthModule } from './features/auth/auth.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -25,6 +27,16 @@ import { UserModule } from './features/user/user.module';
       }),
     }),
     UserModule,
+    AuthModule,
+    PassportModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const secret = config.get('secrets.jwt');
+        return { secret, signOptions: { expiresIn: '3600s' } };
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
