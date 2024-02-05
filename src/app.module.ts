@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -9,6 +9,11 @@ import { UserModule } from './features/user/user.module';
 import { AuthModule } from './features/auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ResponseInterceptor } from './core/interceptors/response';
+import { TodoModule } from './features/todo/todo.module';
+import { TodoEntity } from './typeorm/entities';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -22,7 +27,7 @@ import { JwtModule } from '@nestjs/jwt';
         port: +configService.get('USER_PORT'),
         username: configService.get('USER_NAME'),
         password: configService.get('USER_PASSWORD'),
-        entities: [UserEntity],
+        entities: [UserEntity, TodoEntity],
         synchronize: true,
       }),
     }),
@@ -37,8 +42,13 @@ import { JwtModule } from '@nestjs/jwt';
         return { secret, signOptions: { expiresIn: '3600s' } };
       },
     }),
+    TodoModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_PIPE, useClass: ValidationPipe },
+    { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
+  ],
 })
 export class AppModule {}

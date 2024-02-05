@@ -3,7 +3,7 @@ import { Role } from 'src/common/enums/role.enum';
 
 export class CreateUserDto {
   @MaxLength(60)
-  @MinLength(10)
+  @MinLength(3)
   public readonly name: string;
 
   @MinLength(3)

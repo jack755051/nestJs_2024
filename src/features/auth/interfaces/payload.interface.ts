@@ -1,7 +1,7 @@
 import { Role } from 'src/common/enums/role.enum';
 
 export interface UserPayload {
-  id: string;
+  uuid: string;
   username: string;
   role: Role;
 }
